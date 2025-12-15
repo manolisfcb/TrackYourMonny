@@ -11,6 +11,9 @@
 *.sln.docstates
 *.env
 
+# Virtual environment folders
+.venv/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
