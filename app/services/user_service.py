@@ -1,41 +1,39 @@
 from app.models.user_model import UserCreate, UserRead
+from app.db.schema import User, get_user_db
+from fastapi_users import FastAPIUsers, models, BaseUserManager, UUIDIDMixin
+from fastapi_users.authentication import (
+    AuthenticationBackend,
+    BearerTransport,
+    JWTStrategy,
+)
+from fastapi_users.db import SQLAlchemyUserDatabase
+from fastapi import Depends
+import uuid
+SECRET = "secrete1234"
+class UserService(UUIDIDMixin, BaseUserManager[User, str]):
+    reset_password_token_secret = SECRET
+    verification_token_secret = SECRET
+    
+    user_db_model = User
 
-users = {
-    1: {"id": 1, "name": "John Doe", "nickname": "johnd",
-        "email": "john.doe@example.com"},
-    2: {"id": 2, "name": "Jane Smith", "nickname": "janes",
-        "email": "jane.smith@example.com"}
+    async def on_after_forgot_password(self, user, token, request = None):
+        return await super().on_after_forgot_password(user, token, request)
     
-}
+
+async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
+    yield UserService(user_db)
+    
+
+bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
+def get_jwt_strategy() -> JWTStrategy:
+    return JWTStrategy(secret=SECRET, lifetime_seconds=3600)
 
 
-class UserService:
-    def __init__(self):
-        pass
-    
-    def get_all_users(self):
-        return list(users.values())
-    
-    def get_user_by_id(self, user_id: int):
-        return users.get(user_id, None)
-    
-    def create_user(self, user_data: UserCreate):
-        new_id = max(users.keys()) + 1 # This will be handy for auto-increment
-        users[new_id] = {
-            "id": new_id,
-            "name": user_data.name,
-            "nickname": user_data.nickname,
-            "email": user_data.email
-        }
-        user = UserRead(**users[new_id])
-        return user
+auth_backend = AuthenticationBackend(
+    name="jwt",
+    transport=bearer_transport,
+    get_strategy=get_jwt_strategy,
+)
 
-    def update_user(self, user_id: int, user_data: dict):
-        if user_id in users:
-            users[user_id].update(user_data)
-            return users[user_id]
-        return None
-    
-    def delete_user(self, user_id: int):
-        return users.pop(user_id, None)
-    
+fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager=get_user_manager, auth_backends=[auth_backend])
+current_active_user = fastapi_users.current_user(active=True)
