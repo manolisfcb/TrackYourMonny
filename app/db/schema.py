@@ -11,36 +11,13 @@ from datetime import datetime
 from fastapi_users.db import SQLAlchemyBaseUserTableUUID, SQLAlchemyUserDatabase
 from fastapi import Depends
 
+from .schemas.base import Base
+from .schemas.user_schema import User
+from .schemas.bill_schema import Bill
+from .schemas.expense_schema import Expense
+from .schemas.category_schema import Category
 
 DATABASE_URL = "sqlite+aiosqlite:///./trackyourmonny.db"
-
-class Base(DeclarativeBase):
-    pass
-
-class User(SQLAlchemyBaseUserTableUUID, Base):
-    __tablename__ = "user"
-    bill = relationship("Bill", back_populates="user")
-    nickname: str = Column(String, unique=False, nullable=True)
-    
-# PostgreSQL connection with pooling
-# engine = create_async_engine(
-#     DATABASE_URL,
-#     pool_size=5,
-#     max_overflow=5,
-#     pool_pre_ping=True,
-# )
-
-class Bill(Base):
-    __tablename__ = "bills"
-    
-    bill_id: str = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("user.id"))
-    amount: float = Column(String, nullable=False)
-    description: str = Column(Text, nullable=True)
-    date: datetime = Column(DateTime, default=datetime.utcnow)
-    s3_url: str = Column(String, nullable=False)
-    
-    user = relationship("User", back_populates="bill")
 
 
 engine = create_async_engine(DATABASE_URL, echo=True) # Remove SQLite for production use   

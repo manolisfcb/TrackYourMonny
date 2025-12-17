@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
+import os
 
 load_dotenv()
+
 
 class Config(BaseSettings):
     APP_NAME: str = "TrackYourMonny"
@@ -13,6 +15,6 @@ class Config(BaseSettings):
     
     @property
     def database_url(self) -> str:
-        return f"sqlite:///./{self.APP_NAME.lower()}.db"
+        return os.getenv("DATABASE_URL", f"postgresql://{self.db_user}:{self.db_password}@{self.db_host}/{self.db_name}")
     
 config = Config()
