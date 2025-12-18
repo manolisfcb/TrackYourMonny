@@ -5,5 +5,6 @@ from .base import Base
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "user"
-    bill = relationship("Bill", back_populates="user")
+    bill = relationship("Bill", back_populates="user", cascade="all, delete-orphan")
+    expenses = relationship("Expense", back_populates="user", cascade="all, delete-orphan")
     nickname: str = Column(String, unique=False, nullable=True)

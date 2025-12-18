@@ -14,4 +14,4 @@ class Category(Base):
     description: str = Column(Text, nullable=True)
 
 
-    category = relationship("Expense", back_populates="category")
+    expenses = relationship("Expense", back_populates="category")

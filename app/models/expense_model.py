@@ -1,19 +1,26 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional
+import uuid
+from datetime import datetime
 
 class ExpenseBaseModel(BaseModel):
     amount: float = Field(..., gt=0, description="Amount of the expense")
-    description: str = Field(..., max_length=255, description="Description of the expense")
-    category: str = Field(..., max_length=100, description="Category of the expense")
-    date: str = Field(..., description="Date of the expense in YYYY-MM-DD format")
+    description: Optional[str] = Field(None, max_length=255, description="Description of the expense")
+    category_id: uuid.UUID = Field(..., description="Category ID of the expense")
+    expense_date: datetime = Field(..., description="Date of the expense")
+    payment_method: str = Field(..., description="Payment method")
+    currency: str = Field(..., description="Currency")
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
         
 class ExpenseCreateModel(ExpenseBaseModel):
-    pass
+    expense_date: str = Field(..., description="Date of the expense in YYYY-MM-DD format")
+    user_id: uuid.UUID = Field(..., description="User ID")
 
 class ExpenseUpdateModel(ExpenseBaseModel):
     pass
         
 class ExpenseReadModel(ExpenseBaseModel):
-    id: str = Field(..., description="Unique identifier for the expense")
+    expense_id: str = Field(..., description="Unique identifier for the expense")
+    user_id: uuid.UUID = Field(..., description="User ID")
+    created_at: Optional[datetime]

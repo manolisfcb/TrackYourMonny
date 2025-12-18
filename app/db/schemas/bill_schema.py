@@ -10,7 +10,7 @@ class Bill(Base):
     __tablename__ = "bills"
 
     bill_id: str = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("user.id"))
+    user_id: uuid.UUID = Column(UUID(as_uuid=True), ForeignKey("user.id", ondelete="CASCADE"))
     amount: float = Column(String, nullable=False)
     description: str = Column(Text, nullable=True)
     date: datetime = Column(DateTime, default=datetime.utcnow)
